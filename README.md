@@ -415,6 +415,283 @@ Result: Shows users aged 30+ with salary under 100k
 - Click **Clear** to start over without reloading
 - Export filtered results for use elsewhere
 
+### Sorting Tables
+
+#### Basic Sorting
+
+Click the **"Show/Hide"** button to reveal the filter panel, then use the **Sort by** controls:
+
+**Step-by-Step:**
+```
+1. Locate the Sort by section in the filter ribbon
+2. Select a column from the dropdown (e.g., "Name")
+3. Choose a sort method:
+   - Ascending (A→Z or 0→9)
+   - Descending (Z→A or 9→0)
+   - Alphabetical (text-only)
+   - Custom Function (advanced)
+4. Click "Apply Sort" to sort the table
+5. Results appear immediately
+```
+
+#### Sorting Methods Explained
+
+| Method | Use Case | Example |
+|--------|----------|---------|
+| **Ascending** | Numeric or alphabetical order | Ages: 18, 25, 30, 45 |
+| **Descending** | Reverse numeric or alphabetical | Ages: 45, 30, 25, 18 |
+| **Alphabetical** | Text sorting (case-insensitive) | Names: Alice, Bob, Charlie |
+| **Custom Function** | Advanced transformations | Extract numbers from text |
+
+#### Sorting Examples
+
+**Example 1: Simple Alphabetical Sort**
+```
+Table: Names list
+1. Click "Show/Hide" in filter ribbon
+2. Select Column: "Name"
+3. Select Method: "Alphabetical"
+4. Click "Apply Sort"
+5. Result: Names appear A→Z (Alice, Bob, Charlie)
+```
+
+**Example 2: Numeric Descending Sort**
+```
+Table: Sales data with revenue
+1. Select Column: "Revenue"
+2. Select Method: "Descending"
+3. Click "Apply Sort"
+4. Result: Highest revenue first ($50000, $30000, $10000)
+```
+
+**Example 3: Date Sorting**
+```
+Table: Transaction dates (format: DD/MM/YY)
+1. Select Column: "Date"
+2. Select Method: "Ascending"
+3. Click "Apply Sort"
+4. Result: Dates in chronological order
+Note: Works if dates are in consistent format
+```
+
+#### Custom Function Sorting (Advanced)
+
+**What is Custom Function Sorting?**
+
+Custom function sorting allows you to transform data before sorting. Instead of sorting the data as-is, you can apply a formula to each value first.
+
+**Basic Syntax:**
+```javascript
+// Use 'col' to reference the cell value
+// Examples:
+CAST(col AS UNSIGNED)      // Convert to number
+CAST(col AS DECIMAL(10,2)) // Parse as decimal
+LENGTH(col)                // Sort by text length
+UPPER(col)                 // Sort alphabetically (uppercase)
+```
+
+**Example 1: Sort text by length**
+```
+Data: "apple", "banana", "cat", "dog"
+Function: LENGTH(col)
+Result: "cat" (3), "dog" (3), "apple" (5), "banana" (6)
+Explanation: Sorted by how many characters each word has
+```
+
+**Example 2: Extract and sort numbers from mixed text**
+```
+Data: "Item-123", "Item-45", "Item-1000", "Item-78"
+Function: CAST(col AS UNSIGNED)
+Steps:
+  - "Item-123" → 123
+  - "Item-45" → 45
+  - "Item-1000" → 1000
+  - "Item-78" → 78
+Result: 45, 78, 123, 1000 (sorted numerically)
+Explanation: Extracts the numeric part and sorts it
+```
+
+**Example 3: Sort prices (handling currency symbols)**
+```
+Data: "$500.50", "$200.75", "$1000.25", "$50.00"
+Function: CAST(col AS DECIMAL(10,2))
+Steps:
+  - "$500.50" → 500.50
+  - "$200.75" → 200.75
+  - "$1000.25" → 1000.25
+  - "$50.00" → 50.00
+Result: 50.00, 200.75, 500.50, 1000.25
+Explanation: Strips currency symbol and sorts as decimals
+```
+
+**Example 4: Complex transformation - Sort by year in date strings**
+```
+Data: "01-Jan-2023", "15-Mar-2021", "20-Jul-2022", "05-Dec-2020"
+Function: CAST(col AS UNSIGNED)  // If date is: YYYY-MM-DD
+Or use: val.substr(5,2)          // Extract month portion
+Result: Sorted by extracted portion
+Explanation: Transforms dates before comparison
+```
+
+**Common Function Patterns:**
+
+```javascript
+// Parse as positive integer (removes decimals)
+CAST(col AS UNSIGNED)
+
+// Keep decimals
+CAST(col AS DECIMAL(10,2))
+
+// Get text length (sorts short to long)
+LENGTH(col)
+
+// Convert to uppercase (for case-insensitive alphabetical)
+UPPER(col)
+
+// Extract first N characters
+col.substr(0, 5)
+
+// Extract numbers from text (very basic - may need refinement)
+parseInt(col.replace(/\D/g, ''))
+```
+
+**Tips for Custom Functions:**
+- Test with a small dataset first
+- Make sure all values can be transformed
+- Numbers sort numerically; text sorts alphabetically
+- Invalid transformations may cause unpredictable results
+- Syntax errors will show a console error message
+
+### Showing Entries (Pagination)
+
+#### Entries Per Page Control
+
+The **"Show"** dropdown (before the "entries" label) controls how many rows display at once:
+
+**Step-by-Step:**
+```
+1. Locate the "Show" dropdown in the filter ribbon
+2. Select number of rows to display:
+   - 5 (default, shows 5 rows)
+   - 10 (shows 10 rows)
+   - 25 (shows 25 rows)
+   - 50 (shows 50 rows)
+   - 100 (shows 100 rows)
+   - All (shows all rows)
+3. Table immediately updates with new row count
+```
+
+#### Entries Example
+
+**Example 1: Viewing Large Table**
+```
+Table: Employee Directory (500+ employees)
+1. Click "Show" dropdown
+2. Select "25"
+3. Result: Shows 25 employees per page
+4. Can scroll through with 20 pages total
+Benefit: Faster loading, easier browsing
+```
+
+**Example 2: Export vs View**
+```
+Scenario: Viewing 10 entries, but want to export all 500
+1. Set "Show" to 5 (view mode)
+2. Click "📋 Copy" button and select format
+3. Export includes ALL 500 rows (not just visible)
+Result: View compact, export complete
+```
+
+**Entries and Filtering Interaction**
+```
+Scenario: Table with 100 rows, filtered to 30 matches
+1. Show is set to "10"
+2. Filter shows 30 matching rows
+3. Only 10 are displayed (first 10 of matches)
+4. Scroll or adjust "Show" to see more matching rows
+```
+
+**Entries Settings:**
+- Default: 5 rows per page
+- Range: 5, 10, 25, 50, 100, or All
+- Applies only to display (not export)
+- Works with filters and sorts
+- Persists until changed or refresh clicked
+
+### Refresh Button
+
+#### Reset to Default State
+
+The **🔄 Refresh** button (visible in the filter ribbon) resets the table to its original configuration:
+
+**What Refresh Does:**
+```
+✓ Restores original row order (undoes sorting)
+✓ Clears all applied filters
+✓ Resets "Show entries" to default (5)
+✓ Clears sort column and method selections
+✓ Resets column visibility to show all columns
+✓ Hides the filter/sort panel
+✓ Clears filter results display
+```
+
+**Step-by-Step Refresh:**
+```
+1. Locate 🔄 Refresh button in filter ribbon (always visible)
+2. Click the button
+3. Table instantly returns to initial state
+4. All changes are undone at once
+```
+
+#### Refresh Examples
+
+**Example 1: Undo all changes at once**
+```
+Situation: Table has been heavily modified
+- Sorted by Name (Z→A)
+- Filtered to 10 rows
+- Showing only 3 columns
+- Set to 50 entries per page
+
+Action: Click 🔄 Refresh
+
+Result: 
+- Original row order restored
+- All filters cleared
+- All columns shown
+- Showing 5 entries per page (default)
+- Back to initial state
+```
+
+**Example 2: Experimental filtering**
+```
+Workflow: Testing different filter combinations
+1. Apply first filter set
+2. Observe results
+3. Click Refresh to clear
+4. Try different filter
+5. Observe new results
+Benefit: Quick reset without page reload
+```
+
+**Example 3: After detailed analysis**
+```
+Use case: Data analysis
+1. Sort by revenue (highest first)
+2. Filter to top 10% performers
+3. Examine data
+4. Click Refresh
+5. Restore for next analysis
+Benefit: Save time, no page reloading
+```
+
+**Why Refresh Instead of Reload Page?**
+- ✓ Much faster (no page refresh needed)
+- ✓ Keyboard accessible (one click)
+- ✓ Persistent sidebar navigation
+- ✓ No scroll position reset
+- ✓ All other UI states preserved
+
 ### Searching Content
 
 #### Basic Search

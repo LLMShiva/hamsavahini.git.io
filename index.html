@@ -206,8 +206,9 @@
         .filter-apply-btn:hover { filter: brightness(1.1); }
         .filter-clear-btn { background: var(--bg-tertiary); border: 1px solid var(--accent-red); color: var(--accent-red); }
         .filter-clear-btn:hover { background: var(--accent-red); color: #fff; }
-        .filter-refresh-btn { background: var(--bg-tertiary); border: 1px solid var(--accent-cyan); color: var(--accent-cyan); }
+        .filter-refresh-btn { background: var(--bg-tertiary); border: 1px solid var(--accent-cyan); color: var(--accent-cyan); padding: 6px 12px; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 11px; cursor: pointer; transition: all 0.2s ease; }
         .filter-refresh-btn:hover { background: var(--accent-cyan); color: var(--bg-primary); }
+        .refresh-ribbon { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; align-items: center; }
         .table-copy-wrapper { display: flex; justify-content: flex-end; margin-top: 8px; position: relative; }
         .copy-table-btn { background: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 6px 12px; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 11px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 6px; }
         .copy-table-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
@@ -1301,7 +1302,7 @@ function setupTableFilters() {
         const wrapper = document.createElement('div'); wrapper.className = 'table-filter-wrapper'; wrapper.id = `filter-${idx}`;
         const columnSelectorId = `col-selector-${idx}`;
         const columnDropdownId = `col-dropdown-${idx}`;
-        wrapper.innerHTML = `<div class="table-filter-header"><span class="table-filter-title">🔍 Filter Table</span><div class="entries-selector-wrapper"><label class="entries-label">Show</label><select class="entries-dropdown" id="entries-${idx}" data-idx="${idx}"><option value="5">5</option><option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="100">100</option><option value="all">All</option></select><label class="entries-label">entries</label></div><div class="sort-controls-wrapper"><label class="sort-label">Sort by</label><select class="sort-select" id="sort-col-${idx}" data-idx="${idx}"><option value="">Select Column</option>${headers.map((h, i) => `<option value="${i}">${h}</option>`).join('')}</select><select class="sort-method-select" id="sort-method-${idx}" data-idx="${idx}"><option value="asc">Ascending</option><option value="desc">Descending</option><option value="alpha">Alphabetical</option><option value="func">Custom Function</option></select><input type="text" class="sort-function-input" id="sort-func-input-${idx}" placeholder="e.g., CAST(col AS UNSIGNED)" data-idx="${idx}"><button class="sort-apply-btn" id="sort-apply-${idx}" data-idx="${idx}">Apply Sort</button></div><button class="table-filter-toggle" data-idx="${idx}">Show/Hide</button></div><div class="table-filter-rules" id="rules-${idx}" style="display:none;"></div><div class="filter-actions" id="actions-${idx}" style="display:none;"><button class="filter-btn filter-add-btn" data-idx="${idx}">+ Add Rule</button><button class="filter-btn filter-apply-btn" data-idx="${idx}">Apply</button><button class="filter-btn filter-clear-btn" data-idx="${idx}">Clear</button><button class="filter-btn filter-refresh-btn" data-idx="${idx}">🔄 Refresh</button></div><div class="filter-results" id="results-${idx}"></div><div class="table-copy-wrapper" style="display: flex; gap: 8px; align-items: center;"><div class="column-selector-wrapper"><button class="column-selector-btn" id="${columnSelectorId}" title="Select columns to copy">📊 Columns</button><div class="column-selector-dropdown" id="${columnDropdownId}"><div class="column-selector-header"><label class="column-select-all"><input type="checkbox" class="select-all-cols" data-idx="${idx}" checked><span>All Columns</span></label></div><div class="column-items-list" id="cols-list-${idx}"></div><div class="column-selector-footer"><span id="col-count-${idx}">0/0 selected</span></div></div></div><button class="copy-table-btn" data-table-idx="${idx}" title="Copy table in different formats">📋 Copy</button><div class="copy-formats-dropdown" id="dropdown-${idx}"><div class="copy-format-item" data-format="markdown">Markdown</div><div class="copy-format-item" data-format="json">JSON</div><div class="copy-format-item" data-format="html">HTML</div><div class="copy-format-item" data-format="csv">CSV</div><div class="copy-format-item" data-format="tsv">TSV</div></div></div>`;
+        wrapper.innerHTML = `<div class="table-filter-header"><span class="table-filter-title">🔍 Filter Table</span><div class="entries-selector-wrapper"><label class="entries-label">Show</label><select class="entries-dropdown" id="entries-${idx}" data-idx="${idx}"><option value="5">5</option><option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="100">100</option><option value="all">All</option></select><label class="entries-label">entries</label></div><div class="sort-controls-wrapper"><label class="sort-label">Sort by</label><select class="sort-select" id="sort-col-${idx}" data-idx="${idx}"><option value="">Select Column</option>${headers.map((h, i) => `<option value="${i}">${h}</option>`).join('')}</select><select class="sort-method-select" id="sort-method-${idx}" data-idx="${idx}"><option value="asc">Ascending</option><option value="desc">Descending</option><option value="alpha">Alphabetical</option><option value="func">Custom Function</option></select><input type="text" class="sort-function-input" id="sort-func-input-${idx}" placeholder="e.g., CAST(col AS UNSIGNED)" data-idx="${idx}"><button class="sort-apply-btn" id="sort-apply-${idx}" data-idx="${idx}">Apply Sort</button></div><button class="table-filter-toggle" data-idx="${idx}">Show/Hide</button><div class="refresh-ribbon"><button class="filter-btn filter-refresh-btn" data-idx="${idx}" title="Reset table to default state">🔄 Refresh</button></div></div><div class="table-filter-rules" id="rules-${idx}" style="display:none;"></div><div class="filter-actions" id="actions-${idx}" style="display:none;"><button class="filter-btn filter-add-btn" data-idx="${idx}">+ Add Rule</button><button class="filter-btn filter-apply-btn" data-idx="${idx}">Apply</button><button class="filter-btn filter-clear-btn" data-idx="${idx}">Clear</button></div><div class="filter-results" id="results-${idx}"></div><div class="table-copy-wrapper" style="display: flex; gap: 8px; align-items: center;"><div class="column-selector-wrapper"><button class="column-selector-btn" id="${columnSelectorId}" title="Select columns to copy">📊 Columns</button><div class="column-selector-dropdown" id="${columnDropdownId}"><div class="column-selector-header"><label class="column-select-all"><input type="checkbox" class="select-all-cols" data-idx="${idx}" checked><span>All Columns</span></label></div><div class="column-items-list" id="cols-list-${idx}"></div><div class="column-selector-footer"><span id="col-count-${idx}">0/0 selected</span></div></div></div><button class="copy-table-btn" data-table-idx="${idx}" title="Copy table in different formats">📋 Copy</button><div class="copy-formats-dropdown" id="dropdown-${idx}"><div class="copy-format-item" data-format="markdown">Markdown</div><div class="copy-format-item" data-format="json">JSON</div><div class="copy-format-item" data-format="html">HTML</div><div class="copy-format-item" data-format="csv">CSV</div><div class="copy-format-item" data-format="tsv">TSV</div></div></div>`;
         table.parentNode.insertBefore(wrapper, table);
         wrapper.querySelector('.table-filter-toggle').addEventListener('click', () => {
             const rules = document.getElementById(`rules-${idx}`), actions = document.getElementById(`actions-${idx}`);
@@ -1446,6 +1447,30 @@ function clearTableFilter(idx, table) {
 }
 
 function refreshTableToDefault(idx, table) {
+    // Restore original row order
+    const originalRows = originalRowOrder.get(idx);
+    if (originalRows && originalRows.length > 0) {
+        const tbody = table.querySelector('tbody') || table;
+        // Remove all current rows
+        tbody.querySelectorAll('tr').forEach(row => {
+            if (row !== table.querySelector('thead tr')) {
+                row.remove();
+            }
+        });
+        // Restore original rows with cleaned state
+        originalRows.forEach(originalRow => {
+            const newRow = originalRow.cloneNode(true);
+            // Remove all filter-related classes
+            newRow.classList.remove('filtered-out', 'filter-match', 'entries-hidden');
+            tbody.appendChild(newRow);
+        });
+    } else {
+        // Fallback: just remove classes if no original rows stored
+        table.querySelectorAll('tr').forEach(r => { 
+            r.classList.remove('filtered-out', 'filter-match', 'entries-hidden');
+        });
+    }
+    
     // Clear all filter rules
     const rulesContainer = document.getElementById(`rules-${idx}`);
     if (rulesContainer) {
@@ -1463,8 +1488,7 @@ function refreshTableToDefault(idx, table) {
         sortFuncInput.classList.remove('show');
     }
     
-    // Reset filter results and table display
-    table.querySelectorAll('tr').forEach(r => { r.classList.remove('filtered-out', 'filter-match', 'entries-hidden'); });
+    // Reset filter results and clear filter display
     document.getElementById(`results-${idx}`).textContent = '';
     
     // Reset entries dropdown to default (5)
@@ -1473,6 +1497,22 @@ function refreshTableToDefault(idx, table) {
         entriesSelect.value = '5';
         applyEntriesLimit(idx, table, '5');
     }
+    
+    // Reset column selection to all columns
+    const allCheckboxes = document.querySelectorAll(`.col-checkbox[data-table-idx="${idx}"]`);
+    allCheckboxes.forEach(checkbox => {
+        checkbox.checked = true;
+    });
+    const selectAllCheckbox = document.querySelector(`.select-all-cols[data-idx="${idx}"]`);
+    if (selectAllCheckbox) selectAllCheckbox.checked = true;
+    updateColumnSelection(idx);
+    
+    // Update all table cells visibility
+    table.querySelectorAll('th, td').forEach(cell => {
+        if (cell.dataset.colIdx !== undefined) {
+            cell.style.display = '';
+        }
+    });
     
     // Hide the filter rules and actions sections
     const rules = document.getElementById(`rules-${idx}`);
@@ -1564,10 +1604,17 @@ function evaluateCustomSort(valA, valB, funcExpr) {
 // ========================================
 const columnSelectionState = new Map();
 const tableReferences = new Map();
+const originalRowOrder = new Map();
 
 function initializeColumnSelector(tableIdx, headers, buttonId, dropdownId, table) {
     // Store table reference for later use
     tableReferences.set(tableIdx, table);
+    
+    // Store original row order for reset functionality
+    if (!originalRowOrder.has(tableIdx)) {
+        const rows = Array.from(table.querySelectorAll('tbody tr, tr:not(:first-child)'));
+        originalRowOrder.set(tableIdx, rows.map(row => row.cloneNode(true)));
+    }
     
     // Initialize state for this table
     if (!columnSelectionState.has(tableIdx)) {

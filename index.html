@@ -922,7 +922,7 @@ function buildNavigation() {
     const nav = document.getElementById('navContainer'), help = document.getElementById('helpItem'), namaste = document.getElementById('namasteItem'), readme = document.getElementById('readmeItem'),
           publicAll = document.getElementById('publicAllItem'), masterToc = document.getElementById('masterTocContainer');
     nav.innerHTML = '';
-    if (AppState.hasReadme) { help.style.display = 'flex'; nav.appendChild(help); namaste.style.display = 'flex'; nav.appendChild(namaste); readme.style.display = 'flex'; nav.appendChild(readme); }
+    if (AppState.hasReadme) { namaste.style.display = 'flex'; nav.appendChild(namaste); help.style.display = 'flex'; nav.appendChild(help); readme.style.display = 'flex'; nav.appendChild(readme); }
     nav.appendChild(publicAll);
     nav.appendChild(masterToc);
     for (const group of Array.from(AppState.groups.keys()).sort()) nav.appendChild(createGroupDropdown(group));

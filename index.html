@@ -87,6 +87,9 @@
         .public-all-item { background: linear-gradient(135deg, rgba(63, 185, 80, 0.1), rgba(57, 197, 207, 0.1)); border: 1px solid var(--accent-green); color: var(--accent-green); }
         .public-all-item:hover { background: linear-gradient(135deg, rgba(63, 185, 80, 0.2), rgba(57, 197, 207, 0.2)); }
         .public-all-item.active { background: var(--accent-green); }
+        .contact-item { background: linear-gradient(135deg, rgba(88, 166, 255, 0.1), rgba(163, 113, 247, 0.1)); border: 1px solid var(--accent-blue); color: var(--accent-blue); }
+        .contact-item:hover { background: linear-gradient(135deg, rgba(88, 166, 255, 0.2), rgba(163, 113, 247, 0.2)); }
+        .contact-item.active { background: var(--accent-blue); }
         .special-nav-item-emoji { margin-right: 10px; font-size: 16px; }
         .main-content { flex: 1; margin-left: 340px; display: flex; flex-direction: column; }
         .top-bar { position: sticky; top: 0; background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); padding: 16px 32px; z-index: 50; display: flex; align-items: center; gap: 16px; justify-content: space-between; }
@@ -332,8 +335,8 @@
             .top-bar-left { gap: 12px; }
             .top-bar-right { gap: 8px; }
             
-            /* Search container - hide on mobile, show toggle */
-            .search-container { display: none; }
+            /* Search container - show on mobile */
+            .search-container { display: flex; max-width: 250px; margin-left: 80px; }
             .mobile-menu-btn { display: none; } /* Hide the button in top-bar */
             .floating-menu-btn { display: flex; } /* Show floating button on mobile */
             
@@ -520,6 +523,7 @@
                 <div class="special-nav-item help-item" id="helpItem" style="display: none;"><span class="special-nav-item-emoji">❓</span><span>Help</span></div>
                 <div class="special-nav-item namaste-item" id="namasteItem" style="display: none;"><span class="special-nav-item-emoji">🙏</span><span>Namaste</span></div>
                 <div class="special-nav-item readme-item" id="readmeItem" style="display: none;"><span class="special-nav-item-emoji">📘</span><span>README.md</span></div>
+                <a href="index2.html" class="special-nav-item contact-item" id="contactItem"><span class="special-nav-item-emoji">📞</span><span>CONTACT</span></a>
                 <div class="special-nav-item public-all-item" id="publicAllItem"><span class="special-nav-item-emoji">🌐</span><span>Public All Notes</span></div>
                 <div class="master-toc-container" id="masterTocContainer">
                     <div class="master-toc-header" id="masterTocHeader"><span class="master-toc-icon">▶</span><span class="master-toc-title">📋 Master TOC</span></div>
@@ -930,9 +934,9 @@ function fallbackRender(content) {
 // ========================================
 function buildNavigation() {
     const nav = document.getElementById('navContainer'), help = document.getElementById('helpItem'), namaste = document.getElementById('namasteItem'), readme = document.getElementById('readmeItem'),
-          publicAll = document.getElementById('publicAllItem'), masterToc = document.getElementById('masterTocContainer');
+          contact = document.getElementById('contactItem'), publicAll = document.getElementById('publicAllItem'), masterToc = document.getElementById('masterTocContainer');
     nav.innerHTML = '';
-    if (AppState.hasReadme) { namaste.style.display = 'flex'; nav.appendChild(namaste); help.style.display = 'flex'; nav.appendChild(help); readme.style.display = 'flex'; nav.appendChild(readme); }
+    if (AppState.hasReadme) { namaste.style.display = 'flex'; nav.appendChild(namaste); contact.style.display = 'flex'; nav.appendChild(contact); help.style.display = 'flex'; nav.appendChild(help); readme.style.display = 'flex'; nav.appendChild(readme); }
     nav.appendChild(publicAll);
     nav.appendChild(masterToc);
     for (const group of Array.from(AppState.groups.keys()).sort()) nav.appendChild(createGroupDropdown(group));

@@ -601,7 +601,7 @@ window.noteU12Meta = { name: "JS Advanced", emoji: "📗", password: null, prote
 window.noteU13Content = `# Security Patterns (Locked)\n\n## Auth Table\n\n| Method | Level |\n|--------|-------|\n| JWT | High |\n| OAuth | Very High |`;
 window.noteU13Meta = { name: "Security", emoji: "🔒", password: "secret123", protection: "YES" };
 
-window.noteU21Content = `# React Fundamentals\n\n## Components\nBuilding blocks of React.\n\n## Comparison\n\n| Feature | Class | Functional |\n|---------|-------|------------|\n| State | this.state | useState |\n| Lifecycle | methods | useEffect |\n\n## Resources\n\n| Resource | Link | Type |\n|----------|------|------|\n| Official Docs | https://react.dev | External |\n| Tutorial | https://react.dev/learn | External |\n| Community | https://github.com/facebook/react | Repository |`;
+window.noteU21Content = `# React Fundamentals\n\n## Components\nBuilding blocks of React.\n\n## Comparison\n\n| Feature | Class | Functional |\n|---------|-------|------------|\n| State | this.state | useState |\n| Lifecycle | methods | useEffect |\n\n## Resources\n\n| Resource | Link | Type |\n|----------|------|------|\n| Official Docs | https://react.dev | External |\n| Tutorial | https://react.dev/learn | External |\n| Community | https://github.com/facebook/react | Repository |\n| Internet | [IMAGES/ganesh.jpg] | Image |`;
 window.noteU21Meta = { name: "React Basics", emoji: "⚛️", password: null, protection: "YES" };
 
 window.noteU22Content = `# State Management\n\n## Solutions\n\n| Library | Size | Learning |\n|---------|------|----------|\n| Redux | Large | Steep |\n| MobX | Medium | Medium |\n| Zustand | Small | Easy |\n\n## Gallery\n\n| Title | Caption | Subcaption | URL |\n|-------|---------|------------|-----|\n| React Logo | Official React brand | Modern UI library | https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/1024px-React-icon.svg.png |\n| Vue Framework | Progressive framework | Alternative to React | https://vuejs.org/images/logo.png |\n| Angular Icon | Google framework | Complete solution | https://angular.io/assets/images/logos/angular/angular.svg |`;
@@ -1124,6 +1124,25 @@ function displayRenderedContent(note, rendered, isCombined = false, notesInCombi
     const html = rendered.html || rendered.get('html');
     const toc = isCombined && notesInCombined.length ? generateCombinedTOC(html, notesInCombined) : generateCustomTOC(html);
     area.innerHTML = `<header class="content-header"><h1 class="content-title"><span class="content-title-emoji">${note.meta.emoji}</span>${note.meta.name}</h1><div class="content-meta">${note.meta.description || (isCombined ? `${notesInCombined.length} notes combined` : 'Individual note')}</div></header>${toc ? `<nav class="toc-container" id="toc-container"><div class="toc-title">📋 Table of Contents</div><ul class="toc-list${isCombined ? '' : ' single-column'}">${toc}</ul></nav>` : ''}<div class="markdown-body" id="markdownBody">${html}</div>`;
+
+    // Process table cells for internal links in Link column only
+    const tables = area.querySelectorAll('table');
+    for (const table of tables) {
+        const headers = Array.from(table.querySelectorAll('th')).map(th => th.textContent.trim());
+        const linkIndex = headers.indexOf('Link');
+        if (linkIndex !== -1) {
+            const rows = table.querySelectorAll('tbody tr');
+            for (const row of rows) {
+                const cells = row.querySelectorAll('td');
+                if (cells[linkIndex]) {
+                    const text = cells[linkIndex].textContent.trim();
+                    if (text.match(/\.(jpg|jpeg|png|gif|pdf|docx|ppt|pptx|txt|mp4|avi|mov|mp3|wav)$/i) || text.includes('/') || text.startsWith('IMAGES/')) {
+                        cells[linkIndex].innerHTML = `<a href="${text}" target="_blank">${text}</a>`;
+                    }
+                }
+            }
+        }
+    }
 
     // Determine protection state: either note.meta.protection or any note in combined
     const metaObj = note && note.meta ? note.meta : {};

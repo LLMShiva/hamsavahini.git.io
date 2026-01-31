@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
     <style>
 
     body {
       font-family: Arial, sans-serif;
       font-size: 16px;
       line-height: 1.5;
-      padding: 0;
+      padding: 30px 0 0 0;
       margin: 0;
       background-color: #f2f2f2;
     }
@@ -76,22 +77,34 @@
       color: #999;
     }
 
+  .title-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 12px;
+    line-height: 1.2;
+  }
+  
   .fixedtop {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    background-color: #fff;
+    background: #f0f0f0;
     z-index: 9999;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    padding: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 2px 5px;
     box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
   }
   
   #contacts {
-    margin-top: 60px;
+    margin-top: 30px;
     overflow-y: auto;
-    height: calc(100vh - 60px);
+    height: calc(100vh - 30px);
     box-sizing: border-box;
     padding: 10px;
   }
@@ -104,6 +117,10 @@
   th, td {
     padding: 10px;
     border: 1px solid #ccc;
+  }
+  
+  tr.filtered-out, tr.entries-hidden, tr.search-hidden {
+    display: none;
   }
   
   #search {
@@ -136,25 +153,21 @@
         }
   
         .link-container {
-      position: fixed;
-      bottom: 90%;
-      left: 0;
-      right: 0;
-      text-align: bottom;
+      display: flex;
+      gap: 10px;
+      align-items: center;
     }
 
     /* Style for the links */
     .link-container a {
       color: red;
       text-decoration: none;
-      display: inline-block;
-      margin-right: 20px;
-      font-size: normal;
+      font-size: 14px;
     }
 
-    .search-container { flex: 1; max-width: 500px; margin-left: auto; }
-    .search-wrapper { position: relative; display: flex; align-items: center; gap: 8px; }
-    .search-input { flex: 1; background: #eaeef2; border: 1px solid #e1e4e8; border-radius: 8px; padding: 10px 40px 10px 16px; font-family: Arial, sans-serif; font-size: 13px; color: #24292e; transition: all 0.2s ease; }
+    .search-container { flex: 1; max-width: 400px; margin-left: auto; }
+    .search-wrapper { position: relative; display: flex; align-items: center; gap: 4px; }
+    .search-input { flex: 1; background: #eaeef2; border: 1px solid #e1e4e8; border-radius: 6px; padding: 5px 30px 5px 10px; font-family: Arial, sans-serif; font-size: 12px; color: #24292e; transition: all 0.2s ease; }
     .search-input:focus { outline: none; border-color: #0366d6; box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15); }
     .search-input::placeholder { color: #6a737d; }
     .search-icon { position: absolute; right: 12px; color: #6a737d; pointer-events: none; }
@@ -169,20 +182,94 @@
     .search-highlight { background: #fff5b1; color: #000; padding: 1px 2px; border-radius: 2px; }
     .search-highlight.active { background: #ff6b6b; color: #fff; box-shadow: 0 0 0 2px #ff6b6b; }
 
+    .table-filter-wrapper { background: #f6f8fa; border: 1px solid #e1e4e8; border-radius: 8px; padding: 12px; margin-bottom: 8px; }
+    .table-filter-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .table-filter-title { font-family: Arial, sans-serif; font-size: 11px; font-weight: 600; color: #0184bc; text-transform: uppercase; letter-spacing: 1px; }
+    .table-filter-toggle { background: #eaeef2; border: 1px solid #e1e4e8; border-radius: 6px; padding: 4px 8px; font-family: Arial, sans-serif; font-size: 10px; color: #586069; cursor: pointer; }
+    .table-filter-toggle:hover { background: #e1e4e8; color: #24292e; }
+    .table-filter-toggle-main { background: #f6f8fa; border: 1px solid #e1e4e8; border-radius: 6px; padding: 6px 12px; font-family: Arial, sans-serif; font-size: 12px; color: #0366d6; cursor: pointer; margin-bottom: 8px; }
+    .table-filter-toggle-main:hover { background: #e1e4e8; }
+    .mobile-filter-toggle { background: #eaeef2; border: 1px solid #e1e4e8; border-radius: 6px; padding: 6px 12px; font-family: Arial, sans-serif; font-size: 11px; color: #586069; cursor: pointer; margin-bottom: 8px; display: none; }
+    .mobile-filter-toggle:hover { background: #e1e4e8; color: #24292e; }
+    .table-filter-content { display: none; }
+    .entries-selector-wrapper { display: flex; align-items: center; gap: 6px; }
+    .entries-label { font-family: Arial, sans-serif; font-size: 10px; color: #586069; }
+    .entries-dropdown { background: #eaeef2; border: 1px solid #e1e4e8; border-radius: 6px; padding: 5px 8px; font-family: Arial, sans-serif; font-size: 11px; color: #24292e; cursor: pointer; }
+    .entries-dropdown:hover { background: #e1e4e8; }
+    .entries-dropdown:focus { outline: none; border-color: #0366d6; }
+    .sort-controls-wrapper { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .sort-label { font-family: Arial, sans-serif; font-size: 10px; color: #586069; }
+    .sort-select, .sort-method-select { background: #eaeef2; border: 1px solid #e1e4e8; border-radius: 6px; padding: 5px 8px; font-family: Arial, sans-serif; font-size: 11px; color: #24292e; cursor: pointer; }
+    .sort-select:hover, .sort-method-select:hover { background: #e1e4e8; }
+    .sort-select:focus, .sort-method-select:focus { outline: none; border-color: #0366d6; }
+    .sort-apply-btn { background: #28a745; border: none; border-radius: 6px; padding: 5px 10px; font-family: Arial, sans-serif; font-size: 11px; color: #fff; cursor: pointer; }
+    .sort-apply-btn:hover { background: #218838; }
+    .sort-function-input { background: #eaeef2; border: 1px solid #e1e4e8; border-radius: 6px; padding: 5px 8px; font-family: Arial, sans-serif; font-size: 11px; color: #24292e; display: none; }
+    .sort-function-input.show { display: block; }
+    .sort-function-input:focus { outline: none; border-color: #0366d6; }
+    .refresh-ribbon { display: flex; gap: 6px; }
+    .filter-btn { background: #eaeef2; border: 1px solid #e1e4e8; border-radius: 6px; padding: 5px 10px; font-family: Arial, sans-serif; font-size: 11px; color: #24292e; cursor: pointer; }
+    .filter-btn:hover { background: #e1e4e8; }
+    .filter-refresh-btn { background: #f85149; color: #fff; }
+    .filter-refresh-btn:hover { background: #e03c31; }
+    .table-filter-rules { display: flex; flex-direction: column; gap: 6px; }
+    .filter-rule { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .filter-rule select, .filter-rule input { background: #eaeef2; border: 1px solid #e1e4e8; border-radius: 6px; padding: 5px 8px; font-family: Arial, sans-serif; font-size: 11px; color: #24292e; }
+    .filter-rule select:focus, .filter-rule input:focus { outline: none; border-color: #0366d6; }
+    .filter-rule select { min-width: 100px; }
+    .filter-rule input { flex: 1; min-width: 120px; }
+    .filter-rule-remove { background: #f85149; border: none; border-radius: 6px; padding: 5px 8px; color: #fff; cursor: pointer; font-size: 11px; }
+    .filter-rule-remove:hover { background: #e03c31; }
+    .filter-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+    .filter-add-btn { background: #eaeef2; border: 1px solid #e1e4e8; color: #586069; }
+    .filter-add-btn:hover { background: #e1e4e8; color: #24292e; }
+    .filter-apply-btn { background: #0366d6; border: none; color: #fff; }
+    .filter-apply-btn:hover { background: #0256cc; }
+    .filter-clear-btn { background: #eaeef2; border: 1px solid #f85149; color: #f85149; }
+    .filter-clear-btn:hover { background: #f85149; color: #fff; }
+    .filter-results { font-family: Arial, sans-serif; font-size: 12px; color: #586069; margin-top: 8px; }
+    .table-copy-wrapper { display: flex; gap: 8px; align-items: center; }
+    .table-copy-btn { background: #28a745; border: none; border-radius: 6px; padding: 5px 10px; font-family: Arial, sans-serif; font-size: 11px; color: #fff; cursor: pointer; }
+    .table-copy-btn:hover { background: #218838; }
+    .copy-formats-dropdown { position: absolute; top: 100%; right: 0; background: #f6f8fa; border: 1px solid #e1e4e8; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 100; min-width: 150px; display: none; margin-top: 4px; }
+    .copy-formats-dropdown.open { display: block; }
+    .copy-format-item { padding: 8px 12px; cursor: pointer; transition: all 0.2s ease; border-bottom: 1px solid #e1e4e8; font-family: Arial, sans-serif; font-size: 11px; color: #586069; }
+    .copy-format-item:last-child { border-bottom: none; }
+    .copy-format-item:hover { background: #eaeef2; color: #24292e; }
+    .copy-format-item.copied { background: #28a745; color: #fff; border-bottom-color: #28a745; }
+    .column-selector-wrapper { position: relative; display: flex; align-items: center; }
+    .column-selector-btn { background: #eaeef2; border: 1px solid #e1e4e8; border-radius: 6px; padding: 6px 10px; color: #586069; cursor: pointer; transition: all 0.2s ease; font-family: Arial, sans-serif; font-size: 11px; display: flex; align-items: center; gap: 6px; }
+    .column-selector-btn:hover { background: #e1e4e8; color: #24292e; }
+    .column-selector-dropdown { position: absolute; top: 100%; right: 0; background: #f6f8fa; border: 1px solid #e1e4e8; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 101; min-width: 200px; display: none; margin-top: 4px; max-height: 400px; overflow-y: auto; }
+    .column-selector-dropdown.open { display: block; }
+    .column-selector-header { padding: 8px 12px; border-bottom: 1px solid #e1e4e8; display: flex; align-items: center; gap: 8px; background: #eaeef2; font-weight: 600; font-size: 11px; color: #24292e; }
+    .column-select-all { display: flex; align-items: center; gap: 6px; cursor: pointer; flex: 1; user-select: none; }
+    .column-select-all input[type="checkbox"] { cursor: pointer; }
+    .column-select-all span { font-size: 11px; }
+    .column-item { display: flex; align-items: center; padding: 8px 12px; cursor: pointer; transition: background 0.2s ease; border-bottom: 1px solid #e1e4e8; }
+    .column-item:hover { background: #e1e4e8; }
+    .column-item:last-child { border-bottom: none; }
+    .column-item input[type="checkbox"] { cursor: pointer; margin-right: 8px; }
+    .column-item label { flex: 1; cursor: pointer; font-size: 12px; color: #586069; user-select: none; display: flex; align-items: center; }
+    .column-item input[type="checkbox"]:checked + label { color: #0366d6; font-weight: 500; }
+    .column-selector-footer { padding: 8px 12px; border-top: 1px solid #e1e4e8; background: #eaeef2; display: flex; gap: 6px; font-size: 10px; color: #6a737d; }
+
     </style>
 </head>
 <body>
-    <div class="fixedtop">
+    <div class="title-section">
         <center><b><u> न्यायापालिकायाराजपत्राङ्कितमानवसंसाधनम्</u></b> </center>
         <p id="developedby"><b>-</b>शिवप्रसादआचार्येण निर्मितानि
-    </p>
+</p>
+    </div>
+    <div class="fixedtop">
             <div class="link-container">
       <a href="#top">&#x25B2;</a>
       <a href="#bottom">&#x25BC;</a>
     </div>
         <div class="search-container">
             <div class="search-wrapper">
-                <input type="text" class="search-input" id="searchInput" placeholder="Search in content... (Ctrl+F)">
+                <input type="text" class="search-input" id="searchInput" placeholder="Search in content... (Ctrl+F)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                 <span class="search-icon">🔍</span>
                 <button class="clear-search-btn" id="clearSearch">✕</button>
             </div>
@@ -192,7 +279,7 @@
                 <button class="search-btn" id="searchNext" disabled>▼</button>
             </div>
         </div>
-       </div><br><br><br><br><br>
+       </div>
      <div id="contacts">
       <table>
         <thead>
@@ -1317,21 +1404,51 @@ const NepaliNormalizer = {
     }
 };
 
+const searchInput = document.getElementById('searchInput');
+const searchNav = document.getElementById('searchNav');
+const searchCounter = document.getElementById('searchCounter');
+const searchPrev = document.getElementById('searchPrev');
+const searchNext = document.getElementById('searchNext');
+const clearSearchBtn = document.getElementById('clearSearch');
+
+searchInput.addEventListener('input', () => performSearch(searchInput.value));
+searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        if (e.shiftKey) navigatePrevMatch();
+        else navigateNextMatch();
+    }
+});
+searchPrev.addEventListener('click', navigatePrevMatch);
+searchNext.addEventListener('click', navigateNextMatch);
+clearSearchBtn.addEventListener('click', clearSearch);
+
 function performSearch(query) {
-    const body = document.getElementById('contacts');
-    if (!body || !query.trim()) { clearSearch(); return; }
-    body.innerHTML = originalContent;
+    if (!query.trim()) { clearSearch(); return; }
+    // Clear previous highlights
+    document.querySelectorAll('.search-highlight').forEach(el => {
+        el.outerHTML = el.textContent;
+    });
     searchMatches = [];
     currentMatchIndex = -1;
+    const body = document.getElementById('contacts');
     const isNepali = NepaliNormalizer.isDevanagari(query);
     if (isNepali) highlightDevanagari(body, query);
     else highlightMatches(body, query.toLowerCase());
-    // Filter rows: hide rows without matches
+    // Filter rows
     const rows = body.querySelectorAll('tbody tr');
     rows.forEach(row => {
-        const hasMatch = row.querySelector('.search-highlight') !== null;
-        row.style.display = hasMatch ? '' : 'none';
+        if (row.querySelector('.search-highlight')) {
+            row.classList.remove('search-hidden');
+        } else {
+            row.classList.add('search-hidden');
+        }
     });
+    // Set entries to ALL when searching
+    const entriesSelect = document.querySelector('select[id^="entries-"]');
+    if (entriesSelect) {
+        entriesSelect.value = 'all';
+        applyEntriesLimit(0, body, 'all');
+    }
     updateSearchUI();
     if (searchMatches.length > 0) navigateToMatch(0);
 }
@@ -1438,9 +1555,12 @@ function navigatePrevMatch() { if (searchMatches.length === 0) return; let idx =
 function navigateNextMatch() { if (searchMatches.length === 0) return; let idx = currentMatchIndex + 1; if (idx >= searchMatches.length) idx = 0; navigateToMatch(idx); }
 function clearSearch() {
     document.getElementById('searchInput').value = '';
-    searchMatches = []; currentMatchIndex = -1;
-    const body = document.getElementById('contacts');
-    if (body && originalContent) { body.innerHTML = originalContent; }
+    document.querySelectorAll('.search-highlight').forEach(el => {
+        el.outerHTML = el.textContent;
+    });
+    document.querySelectorAll('#contacts tbody tr').forEach(row => row.classList.remove('search-hidden'));
+    searchMatches = [];
+    currentMatchIndex = -1;
     updateSearchUI();
 }
 function updateSearchUI() {
@@ -1457,36 +1577,417 @@ function updateSearchUI() {
 // Initialize original content
 originalContent = document.getElementById('contacts').innerHTML;
 
-let searchTimeout;
-document.getElementById('searchInput').addEventListener('input', e => { clearTimeout(searchTimeout); searchTimeout = setTimeout(() => performSearch(e.target.value), 300); });
-document.getElementById('searchPrev').addEventListener('click', navigatePrevMatch);
-document.getElementById('searchNext').addEventListener('click', navigateNextMatch);
-document.getElementById('clearSearch').addEventListener('click', clearSearch);
+let originalRowOrder = new Map();
 
-document.addEventListener('keydown', e => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); document.getElementById('searchInput').focus(); }
-    if (e.key === 'F3' || (e.key === 'Enter' && document.activeElement.id === 'searchInput')) { e.preventDefault(); e.shiftKey ? navigatePrevMatch() : navigateNextMatch(); }
-    if (e.key === 'Escape' && document.activeElement.id === 'searchInput') { clearSearch(); document.getElementById('searchInput').blur(); }
-});
-
-//to make content not to pass over fixed top on scrolling//
-
-    window.addEventListener("scroll", function() {
-      var fixedTop = document.querySelector(".fixedtop");
-      var contacts = document.querySelector("#contacts");
-      if (window.pageYOffset >= fixedTop.offsetHeight) {
-        contacts.style.marginTop = fixedTop.offsetHeight + "px";
-      } else {
-        contacts.style.marginTop = "60px";
-      }
+function setupTableFilters() {
+    const table = document.querySelector('#contacts table');
+    if (!table) return;
+    const idx = 0; // Only one table
+    const headers = Array.from(table.querySelectorAll('th')).map(th => th.textContent.trim());
+    if (headers.length === 0) return;
+    
+    // Store original row order
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    originalRowOrder.set(idx, rows.map(row => row.cloneNode(true)));
+    
+    const wrapper = document.createElement('div'); wrapper.className = 'table-filter-wrapper'; wrapper.id = `filter-${idx}`;
+    const columnSelectorId = `col-selector-${idx}`;
+    const columnDropdownId = `col-dropdown-${idx}`;
+    wrapper.innerHTML = `<button class="table-filter-toggle-main" data-idx="${idx}">🔍 Show Filters</button><div class="table-filter-content"><button class="mobile-filter-toggle" data-idx="${idx}">🔍 Toggle Filters</button><div class="table-filter-header"><span class="table-filter-title">🔍 Filter Table</span><div class="entries-selector-wrapper"><label class="entries-label">Show</label><select class="entries-dropdown" id="entries-${idx}" data-idx="${idx}"><option value="5">5</option><option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="100">100</option><option value="all">All</option></select><label class="entries-label">entries</label></div><div class="sort-controls-wrapper"><label class="sort-label">Sort by</label><select class="sort-select" id="sort-col-${idx}" data-idx="${idx}"><option value="">Select Column</option>${headers.map((h, i) => `<option value="${i}">${h}</option>`).join('')}</select><select class="sort-method-select" id="sort-method-${idx}" data-idx="${idx}"><option value="asc">Ascending</option><option value="desc">Descending</option><option value="alpha">Alphabetical</option><option value="func">Custom Function</option></select><input type="text" class="sort-function-input" id="sort-func-input-${idx}" placeholder="e.g., CAST(col AS UNSIGNED)" data-idx="${idx}"><button class="sort-apply-btn" id="sort-apply-${idx}" data-idx="${idx}">Apply Sort</button></div><button class="table-filter-toggle" data-idx="${idx}">Show/Hide</button><div class="refresh-ribbon"><button class="filter-btn filter-refresh-btn" data-idx="${idx}" title="Reset table to default state">🔄 RESET</button></div></div><div class="table-filter-rules" id="rules-${idx}" style="display:none;"></div><div class="filter-actions" id="actions-${idx}" style="display:none;"><button class="filter-btn filter-add-btn" data-idx="${idx}">+ Add Rule</button><button class="filter-btn filter-apply-btn" data-idx="${idx}">Apply</button><button class="filter-btn filter-clear-btn" data-idx="${idx}">Clear</button></div><div class="filter-results" id="results-${idx}"></div><div class="table-copy-wrapper" style="display: flex; gap: 8px; align-items: center;"><div class="column-selector-wrapper"><button class="column-selector-btn" id="${columnSelectorId}" title="Select columns to copy">📊 Columns</button><div class="column-selector-dropdown" id="${columnDropdownId}"><div class="column-selector-header"><label class="column-select-all"><input type="checkbox" class="select-all-cols" data-idx="${idx}" checked><span>All Columns</span></label></div><div class="column-items-list" id="cols-list-${idx}"></div><div class="column-selector-footer"><span id="col-count-${idx}">0/0 selected</span></div></div></div><button class="table-copy-btn" data-table-idx="${idx}" title="Copy table in different formats">📋 Copy</button><div class="copy-formats-dropdown" id="dropdown-${idx}"><div class="copy-format-item" data-format="markdown">Markdown</div><div class="copy-format-item" data-format="json">JSON</div><div class="copy-format-item" data-format="html">HTML</div><div class="copy-format-item" data-format="csv">CSV</div><div class="copy-format-item" data-format="tsv">TSV</div></div></div></div>`;
+    table.parentNode.insertBefore(wrapper, table);
+    wrapper.querySelector('.table-filter-toggle-main').addEventListener('click', () => {
+        const content = wrapper.querySelector('.table-filter-content');
+        const btn = wrapper.querySelector('.table-filter-toggle-main');
+        if (content.style.display === 'none') {
+            content.style.display = 'block';
+            btn.textContent = '🔍 Hide Filters';
+        } else {
+            content.style.display = 'none';
+            btn.textContent = '🔍 Show Filters';
+        }
     });
+    wrapper.querySelector('.table-filter-toggle').addEventListener('click', () => {
+        const rules = document.getElementById(`rules-${idx}`), actions = document.getElementById(`actions-${idx}`);
+        const show = rules.style.display === 'none';
+        rules.style.display = show ? 'flex' : 'none';
+        actions.style.display = show ? 'flex' : 'none';
+        if (show && document.getElementById(`rules-${idx}`).children.length === 0) addFilterRule(idx, headers);
+    });
+    wrapper.querySelector('.mobile-filter-toggle').addEventListener('click', () => {
+        const content = wrapper.querySelector('.table-filter-content');
+        content.style.display = content.style.display === 'none' ? 'block' : 'none';
+    });
+    wrapper.querySelector('.filter-add-btn').addEventListener('click', () => addFilterRule(idx, headers));
+    wrapper.querySelector('.filter-apply-btn').addEventListener('click', () => applyTableFilter(idx, table, headers));
+    wrapper.querySelector('.filter-clear-btn').addEventListener('click', () => clearTableFilter(idx, table));
+    wrapper.querySelector('.filter-refresh-btn').addEventListener('click', () => refreshTableToDefault(idx, table));
+    
+    // Initialize entries selector
+    const entriesSelect = wrapper.querySelector(`#entries-${idx}`);
+    entriesSelect.addEventListener('change', () => applyEntriesLimit(idx, table, entriesSelect.value));
+    // Apply default entries limit of 5 on page load
+    applyEntriesLimit(idx, table, '5');
+    
+    // Initialize sort controls
+    const sortColSelect = wrapper.querySelector(`#sort-col-${idx}`);
+    const sortMethodSelect = wrapper.querySelector(`#sort-method-${idx}`);
+    const sortFuncInput = wrapper.querySelector(`#sort-func-input-${idx}`);
+    const sortApplyBtn = wrapper.querySelector(`#sort-apply-${idx}`);
+    
+    sortMethodSelect.addEventListener('change', () => {
+        if (sortMethodSelect.value === 'func') {
+            sortFuncInput.classList.add('show');
+        } else {
+            sortFuncInput.classList.remove('show');
+        }
+    });
+    
+    sortApplyBtn.addEventListener('click', () => {
+        const colIdx = sortColSelect.value;
+        if (colIdx === '') {
+            alert('Please select a column to sort');
+            return;
+        }
+        const method = sortMethodSelect.value;
+        const funcExpr = method === 'func' ? sortFuncInput.value : '';
+        applySortToTable(idx, table, headers, colIdx, method, funcExpr);
+    });
+    
+    const copyBtn = wrapper.querySelector('.copy-table-btn');
+    const dropdown = wrapper.querySelector('.copy-formats-dropdown');
+    copyBtn.addEventListener('click', (e) => { e.stopPropagation(); dropdown.classList.toggle('open'); });
+    dropdown.querySelectorAll('.copy-format-item').forEach(item => {
+        item.addEventListener('click', () => copyTableInFormat(table, item.dataset.format, copyBtn, dropdown, idx));
+    });
+    document.addEventListener('click', (e) => {
+        if (!wrapper.contains(e.target)) dropdown.classList.remove('open');
+    });
+    
+    // Initialize column selector
+    initializeColumnSelector(idx, headers, columnSelectorId, columnDropdownId, table);
+}
 
-    function sendEmail() {
-      var comment = document.getElementById('comment').value;
-      var subject = encodeURIComponent('New Comment');
-      var body = encodeURIComponent('Comment:\n' + comment);
-      window.location.href = 'mailto:spacharya43@gmail.com?subject=' + subject + '&body=' + body;
+function addFilterRule(idx, headers) {
+    const container = document.getElementById(`rules-${idx}`), ruleIdx = container.children.length;
+    const rule = document.createElement('div'); rule.className = 'filter-rule'; rule.dataset.ruleIdx = ruleIdx;
+    rule.innerHTML = `${ruleIdx > 0 ? '<select class="filter-logic-select"><option value="AND">AND</option><option value="OR">OR</option></select>' : ''}<select class="filter-column">${headers.map((h, i) => `<option value="${i}">${h}</option>`).join('')}</select><select class="filter-operator"><option value="contains">CONTAINS</option><option value="equals">EQUALS</option><option value="like">LIKE (%)</option><option value="not_contains">NOT CONTAINS</option><option value="not_equals">NOT EQUALS</option><option value="gt">></option><option value="lt"><</option><option value="gte">>=</option><option value="lte"><=</option></select><input type="text" class="filter-value" placeholder="Value..."><button class="filter-rule-remove">✕</button>`;
+    rule.querySelector('.filter-rule-remove').addEventListener('click', () => { rule.remove(); });
+    container.appendChild(rule);
+}
+
+function applyTableFilter(idx, table, headers) {
+    const rules = Array.from(document.getElementById(`rules-${idx}`).querySelectorAll('.filter-rule'));
+    const rows = table.querySelectorAll('tbody tr');
+    let matchCount = 0, totalCount = rows.length;
+    rows.forEach(row => {
+        const cells = Array.from(row.querySelectorAll('td'));
+        if (cells.length === 0) return;
+        let match = null;
+        rules.forEach((rule, i) => {
+            const col = parseInt(rule.querySelector('.filter-column').value);
+            const op = rule.querySelector('.filter-operator').value;
+            const val = rule.querySelector('.filter-value').value;
+            const cellVal = cells[col]?.textContent.trim() || '';
+            const ruleMatch = evaluateCondition(cellVal, op, val);
+            if (i === 0) { match = ruleMatch; }
+            else {
+                const logic = rule.querySelector('.filter-logic-select')?.value || 'AND';
+                match = logic === 'AND' ? (match && ruleMatch) : (match || ruleMatch);
+            }
+        });
+        if (match) { row.classList.remove('filtered-out'); row.classList.add('filter-match'); matchCount++; }
+        else { row.classList.add('filtered-out'); row.classList.remove('filter-match'); }
+    });
+    document.getElementById(`results-${idx}`).textContent = `Showing ${matchCount} of ${totalCount} rows`;
+    // Reapply entries limit after filter
+    const entriesSelect = document.querySelector(`#entries-${idx}`);
+    if (entriesSelect) {
+        applyEntriesLimit(idx, table, entriesSelect.value);
     }
+}
+
+function evaluateCondition(cellVal, op, filterVal) {
+    const cv = cellVal.toLowerCase(), fv = filterVal.toLowerCase();
+    switch (op) {
+        case 'contains': return cv.includes(fv);
+        case 'equals': return cv === fv;
+        case 'like': return new RegExp('^' + fv.replace(/%/g, '.*') + '$', 'i').test(cellVal);
+        case 'not_contains': return !cv.includes(fv);
+        case 'not_equals': return cv !== fv;
+        case 'gt': return parseFloat(cellVal) > parseFloat(filterVal);
+        case 'lt': return parseFloat(cellVal) < parseFloat(filterVal);
+        case 'gte': return parseFloat(cellVal) >= parseFloat(filterVal);
+        case 'lte': return parseFloat(cellVal) <= parseFloat(filterVal);
+        default: return true;
+    }
+}
+
+function clearTableFilter(idx, table) {
+    table.querySelectorAll('tr').forEach(r => { r.classList.remove('filtered-out', 'filter-match', 'entries-hidden'); });
+    document.getElementById(`results-${idx}`).textContent = '';
+    // Reset entries dropdown to default (5)
+    const entriesSelect = document.querySelector(`#entries-${idx}`);
+    if (entriesSelect) {
+        entriesSelect.value = '5';
+        applyEntriesLimit(idx, table, '5');
+    }
+}
+
+function applyEntriesLimit(idx, table, limit) {
+    const rows = Array.from(table.querySelectorAll('tbody tr'));
+    const visibleRows = rows.filter(r => !r.classList.contains('filtered-out') && !r.classList.contains('search-hidden'));
+    visibleRows.forEach((row, i) => {
+        if (limit === 'all' || i < parseInt(limit)) {
+            row.classList.remove('entries-hidden');
+        } else {
+            row.classList.add('entries-hidden');
+        }
+    });
+}
+
+function refreshTableToDefault(idx, table) {
+    // Restore original row order
+    const originalRows = originalRowOrder.get(idx);
+    if (originalRows && originalRows.length > 0) {
+        const tbody = table.querySelector('tbody');
+        // Remove all current rows
+        tbody.querySelectorAll('tr').forEach(row => row.remove());
+        // Restore original rows with cleaned state
+        originalRows.forEach(originalRow => {
+            const newRow = originalRow.cloneNode(true);
+            // Remove all filter-related classes
+            newRow.classList.remove('filtered-out', 'filter-match', 'entries-hidden');
+            tbody.appendChild(newRow);
+        });
+    } else {
+        // Fallback: just remove classes if no original rows stored
+        table.querySelectorAll('tr').forEach(r => { 
+            r.classList.remove('filtered-out', 'filter-match', 'entries-hidden');
+        });
+    }
+    
+    // Clear all filter rules
+    const rulesContainer = document.getElementById(`rules-${idx}`);
+    if (rulesContainer) {
+        rulesContainer.innerHTML = '';
+    }
+    
+    // Reset sort dropdowns
+    const sortColSelect = document.querySelector(`#sort-col-${idx}`);
+    const sortMethodSelect = document.querySelector(`#sort-method-${idx}`);
+    if (sortColSelect) sortColSelect.value = '';
+    if (sortMethodSelect) sortMethodSelect.value = 'asc';
+    
+    // Reset filter results
+    document.getElementById(`results-${idx}`).textContent = '';
+    
+    // Reset entries dropdown to default (5)
+    const entriesSelect = document.querySelector(`#entries-${idx}`);
+    if (entriesSelect) {
+        entriesSelect.value = '5';
+        applyEntriesLimit(idx, table, '5');
+    }
+}
+
+function applyEntriesLimit(idx, table, limit) {
+    const rows = Array.from(table.querySelectorAll('tbody tr')).filter(r => !r.classList.contains('filtered-out'));
+    rows.forEach((row, i) => {
+        if (limit === 'all' || i < parseInt(limit)) {
+            row.classList.remove('entries-hidden');
+        } else {
+            row.classList.add('entries-hidden');
+        }
+    });
+}
+
+function initializeColumnSelector(idx, headers, selectorId, dropdownId, table) {
+    const selectorBtn = document.getElementById(selectorId);
+    const dropdown = document.getElementById(dropdownId);
+    const colsList = document.getElementById(`cols-list-${idx}`);
+    const colCount = document.getElementById(`col-count-${idx}`);
+    const selectAllCheckbox = dropdown.querySelector('.select-all-cols');
+    
+    // Initialize column checkboxes
+    colsList.innerHTML = headers.map((h, i) => `<div class="column-item"><input type="checkbox" data-col="${i}" checked><label>${h}</label></div>`).join('');
+    updateColumnCount(idx, headers.length);
+    
+    // Select all functionality
+    selectAllCheckbox.addEventListener('change', () => {
+        const checkboxes = colsList.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(cb => cb.checked = selectAllCheckbox.checked);
+        updateColumnCount(idx, headers.length);
+    });
+    
+    // Individual column selection
+    colsList.addEventListener('change', (e) => {
+        if (e.target.type === 'checkbox') {
+            const checkboxes = colsList.querySelectorAll('input[type="checkbox"]');
+            const checkedCount = colsList.querySelectorAll('input[type="checkbox"]:checked').length;
+            selectAllCheckbox.checked = checkedCount === checkboxes.length;
+            updateColumnCount(idx, headers.length);
+        }
+    });
+    
+    // Toggle dropdown
+    selectorBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('open');
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target) && e.target !== selectorBtn) {
+            dropdown.classList.remove('open');
+        }
+    });
+}
+
+function updateColumnCount(idx, total) {
+    const colsList = document.getElementById(`cols-list-${idx}`);
+    const colCount = document.getElementById(`col-count-${idx}`);
+    const checkedCount = colsList.querySelectorAll('input[type="checkbox"]:checked').length;
+    colCount.textContent = `${checkedCount}/${total} selected`;
+}
+
+function applySortToTable(idx, table, headers, colIdx, method, funcExpr) {
+    const colIndex = parseInt(colIdx);
+    const rows = Array.from(table.querySelectorAll('tbody tr'));
+    
+    const sortedRows = rows.sort((rowA, rowB) => {
+        const cellA = rowA.querySelectorAll('td')[colIndex];
+        const cellB = rowB.querySelectorAll('td')[colIndex];
+        const valA = cellA ? cellA.textContent.trim() : '';
+        const valB = cellB ? cellB.textContent.trim() : '';
+        
+        switch (method) {
+            case 'asc':
+                const numA = parseFloat(valA);
+                const numB = parseFloat(valB);
+                if (!isNaN(numA) && !isNaN(numB)) {
+                    return numA - numB;
+                }
+                return valA.localeCompare(valB);
+            case 'desc':
+                const numA2 = parseFloat(valA);
+                const numB2 = parseFloat(valB);
+                if (!isNaN(numA2) && !isNaN(numB2)) {
+                    return numB2 - numA2;
+                }
+                return valB.localeCompare(valA);
+            case 'alpha':
+                return valA.localeCompare(valB);
+            case 'func':
+                return evaluateCustomSort(valA, valB, funcExpr);
+            default:
+                return 0;
+        }
+    });
+    
+    const tbody = table.querySelector('tbody');
+    sortedRows.forEach(row => {
+        tbody.appendChild(row);
+    });
+}
+
+function evaluateCustomSort(valA, valB, funcExpr) {
+    try {
+        const safeFunc = funcExpr.replace(/col/g, 'val');
+        const result = new Function('val', `return ${safeFunc}`);
+        const transformA = result(valA);
+        const transformB = result(valB);
+        
+        const numA = parseFloat(transformA);
+        const numB = parseFloat(transformB);
+        
+        if (!isNaN(numA) && !isNaN(numB)) {
+            return numA - numB;
+        }
+        return String(transformA).localeCompare(String(transformB));
+    } catch (e) {
+        console.error('Custom sort function error:', e);
+        return 0;
+    }
+}
+
+function copyTableInFormat(table, format, copyBtn, dropdown, idx) {
+    const colsList = document.getElementById(`cols-list-${idx}`);
+    const selectedCols = Array.from(colsList.querySelectorAll('input[type="checkbox"]:checked')).map(cb => parseInt(cb.dataset.col));
+    const headers = Array.from(table.querySelectorAll('th')).map(th => th.textContent.trim()).filter((_, i) => selectedCols.includes(i));
+    const rows = Array.from(table.querySelectorAll('tbody tr')).filter(r => !r.classList.contains('filtered-out') && !r.classList.contains('entries-hidden'));
+    let content = '';
+    
+    const data = rows.map(row => {
+        const cells = Array.from(row.querySelectorAll('td')).filter((_, i) => selectedCols.includes(i)).map(td => td.textContent.trim());
+        return cells;
+    });
+    
+    if (format === 'markdown') {
+        content = `| ${headers.join(' | ')} |\n| ${headers.map(() => '---').join(' | ')} |\n`;
+        data.forEach(row => {
+            content += `| ${row.join(' | ')} |\n`;
+        });
+    } else if (format === 'csv') {
+        if (pyodideReady) {
+            const csvCode = `
+import csv
+import io
+headers = ${JSON.stringify(headers)}
+data = ${JSON.stringify(data)}
+output = io.StringIO()
+writer = csv.writer(output)
+writer.writerow(headers)
+for row in data:
+    writer.writerow(row)
+result = output.getvalue()
+`;
+            content = pyodideInstance.runPython(csvCode);
+        } else {
+            content = headers.join(',') + '\n';
+            data.forEach(row => {
+                content += row.map(cell => `"${cell.replace(/"/g, '""')}"`).join(',') + '\n';
+            });
+        }
+    } else if (format === 'tsv') {
+        content = headers.join('\t') + '\n';
+        data.forEach(row => {
+            content += row.join('\t') + '\n';
+        });
+    } else if (format === 'json') {
+        const jsonData = data.map(row => {
+            const obj = {};
+            headers.forEach((h, i) => obj[h] = row[i]);
+            return obj;
+        });
+        content = JSON.stringify(jsonData, null, 2);
+    } else if (format === 'html') {
+        content = `<table><thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>`;
+        rows.forEach(row => {
+            const cells = Array.from(row.querySelectorAll('td')).filter((_, i) => selectedCols.includes(i)).map(td => `<td>${td.innerHTML}</td>`);
+            content += `<tr>${cells.join('')}</tr>`;
+        });
+        content += '</tbody></table>';
+    }
+    navigator.clipboard.writeText(content).then(() => {
+        copyBtn.textContent = '✅ Copied!';
+        setTimeout(() => copyBtn.textContent = '📋 Copy', 2000);
+    });
+    dropdown.classList.remove('open');
+}
+
+// Call setupTableFilters after the page loads
+let pyodideReady = false;
+let pyodideInstance = null;
+
+async function initPyodide() {
+    pyodideInstance = await loadPyodide({
+        indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.1/full/"
+    });
+    pyodideReady = true;
+}
+
+initPyodide();
+setupTableFilters();
  
 </script>
 </body>
